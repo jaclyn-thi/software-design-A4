@@ -2,8 +2,9 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Friend, Post, User, WebSession } from "./app";
+import { FocusScore, Friend, Post, Status, User, WebSession } from "./app";
 import { PostDoc, PostOptions } from "./concepts/post";
+import { StatusDoc } from "./concepts/status";
 import { UserDoc } from "./concepts/user";
 import { WebSessionDoc } from "./concepts/websession";
 import Responses from "./responses";
@@ -136,6 +137,139 @@ class Routes {
     const fromId = (await User.getUserByUsername(from))._id;
     return await Friend.rejectRequest(fromId, user);
   }
+
+  // //Room routes
+  // @Router.post("/rooms/:user")
+  // async createScore(user: ObjectId) {
+  //   // for a user without a score, instantiate FocusScore associated with user to 0
+  // }
+
+  // @Router.get("/rooms")
+  // async getRooms(session: WebSessionDoc) {
+  //   //get rooms for the user in current session
+  // }
+
+  // @Router.get("/room/occupants")
+  // async getOccupants(session: WebSessionDoc) {
+  //   //get occupants in room
+  // }
+
+  // @Router.put("/room/occupants")
+  // async addUser(user: string) {
+  //   // add user to room.occupants
+  // }
+
+  // @Router.put("/room/occupants/:_id")
+  // async removeUser(user: string) {
+  //   // remove user from room.occupants
+  // }
+
+  //FocusScore routes
+  @Router.post("/FocusScores/:user")
+  async createFocusScore(session: WebSessionDoc) {
+    // for a user in current session without a score, instantiate FocusScore associated with user to 0
+    const user = WebSession.getUser(session);
+    return await FocusScore.create(user, 0);
+  }
+
+  @Router.put("/FocusScore/:user")
+  async updateScore(user: ObjectId, points: number, update: Partial<PostDoc>) {
+    return await FocusScore.updateScore(user, update);
+    // increase the FocusScore associated with User by the specified amount of points
+  }
+
+  // //routes for everything else lol
+  // @Router.post("/Timers/:resource")
+  // async createTimedResource(resource: ObjectId, duration: number) {
+  //   // create a TimedResource from the resource object
+  // }
+
+  // @Router.put("Timers/:resource")
+  // async updateDuration(timer: ObjectId, duration: number) {
+  //   // change the duration of the given timed resource to duration
+  // }
+
+  // @Router.put("Timers/:resource")
+  // async complete(timer: ObjectId) {
+  //   // move the timer to the set of completed timers
+  // }
+
+  // @Router.put("Timers/:resource")
+  // async resetTimer(timer: ObjectId) {
+  //   // remove the timer from the set of completed timers
+  // }
+
+  // @Router.get("/tasks/:user")
+  // async getTasks(session: WebSessionDoc) {
+  //   // get tasks authored by the current user in session
+  // }
+
+  // @Router.post("/tasks/:user")
+  // async createTask(session: WebSessionDoc, title: string, due: Date) {
+  //   // create a task authored by the current user in session with the given date and due date
+  // }
+
+  // @Router.put("/task/:user/:_id")
+  // async updateTaskTitle(session: WebSessionDoc, task: ObjectId, title: string) {
+  //   // edit the title of the task object
+  // }
+
+  // @Router.put("/task/:user/:_id")
+  // async updateTaskStatus(session: WebSessionDoc, task: ObjectId, completionStatus: bool) {
+  //   // edit the status of the task to be completedStatus
+  // }
+
+  // @Router.put("/task/:user/:_id")
+  // async updateDueDate(session: WebSessionDoc, task: ObjectId, due: Date) {
+  //   // edit the due date of the task to be 'due'
+  // }
+
+  @Router.post("/status/:user")
+  async createStatus(session: WebSessionDoc) {
+    const user = WebSession.getUser(session);
+    await Status.create(user, "Online");
+    return { msg: "Status created!", statusType: await Status.getStatus(user) };
+  }
+
+  @Router.get("/status/:username")
+  async getStatus(name: string) {
+    const user = User.getUserByUsername(name);
+    const stat = await Status.getStatus((await user)._id);
+    return { msg: "Status found!", status: stat };
+  }
+
+  @Router.put("/status/:user1")
+  async updateStatus(session: WebSessionDoc, update: Partial<StatusDoc>) {
+    const user = WebSession.getUser(session);
+    return await Status.updateStatus(user, update);
+  }
+
+  // // !!!!!!!!synchronizations!!!!!!!
+  // @Router.post("/focusrooms/")
+  // async createFocusRoom(session: WebSessionDoc, duration: number) {
+  //   // for a user in current session without a FocusRoom, create a FocusRoom where the host is user and focus duration is duration
+  // }
+
+  // @Router.put("/focusroom/:_id")
+  // async addToFocusRoom(user: ObjectId) {
+  //   // for a user with given Id, add user to FocusRoom if they are friends with the host of the focusroom
+  // }
+
+  // @Router.put("/focusroom/:_id")
+  // async removeFromFocusRoom(user: ObjectId) {
+  //   // for a user with given Id, remove user from FocusRoom if they are an occupant of that room
+  // }
+
+  // @Router.put("/focusroom/:_id")
+  // async rewardFocusRoom(_id: ObjectId) {
+  //   // when focus timer in focus room is moved to completed timers, add points to the FocusScores of all occupants based on the duration of the
+  //   // focus timer
+  // }
+
+  // @Router.get("/leaderboard")
+  // async getLeaderboard(session: WebSessionDoc, _id) {
+  //   // returns an array containing the session user and all their friends, ordered by descending FocusScore
+  // }
 }
 
 export default getExpressRouter(new Routes());
