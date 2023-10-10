@@ -2,9 +2,9 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { FocusScore, Friend, Post, Status, User, WebSession } from "./app";
+import { FocusScore, Friend, Post, Room, Status, User, WebSession } from "./app";
+import { NotAllowedError } from "./concepts/errors";
 import { PostDoc, PostOptions } from "./concepts/post";
-import { StatusDoc } from "./concepts/status";
 import { UserDoc } from "./concepts/user";
 import { WebSessionDoc } from "./concepts/websession";
 import Responses from "./responses";
@@ -138,43 +138,76 @@ class Routes {
     return await Friend.rejectRequest(fromId, user);
   }
 
-  // //Room routes
-  // @Router.post("/rooms/:user")
-  // async createScore(user: ObjectId) {
-  //   // for a user without a score, instantiate FocusScore associated with user to 0
-  // }
+  //Room routes
+  @Router.post("/rooms/:user")
+  async createRoom(session: WebSessionDoc) {
+    const user = WebSession.getUser(session);
+    return await Room.create(user);
+  }
 
-  // @Router.get("/rooms")
-  // async getRooms(session: WebSessionDoc) {
-  //   //get rooms for the user in current session
-  // }
+  @Router.get("/rooms")
+  async getRoom(hostName: string) {
+    const host = await User.getUserByUsername(hostName);
+    return await Room.getRoom(host._id);
+  }
 
-  // @Router.get("/room/occupants")
-  // async getOccupants(session: WebSessionDoc) {
-  //   //get occupants in room
-  // }
+  @Router.get("/room/occupants")
+  async getOccupants(hostName: string) {
+    //get occupants for the room with host name host
+    const host = await User.getUserByUsername(hostName);
+    return await Room.getOccupants(host._id);
+  }
 
-  // @Router.put("/room/occupants")
-  // async addUser(user: string) {
-  //   // add user to room.occupants
-  // }
+  @Router.put("/room/occupants/:username")
+  //add user to current session user's room
+  async addUser(username: string, session: WebSessionDoc) {
+    const user = await User.getUserByUsername(username);
+    const host = WebSession.getUser(session);
+    return await Room.addUser(user._id, host);
+  }
 
-  // @Router.put("/room/occupants/:_id")
-  // async removeUser(user: string) {
-  //   // remove user from room.occupants
-  // }
+  @Router.put("/room/occupants/:_id")
+  async removeUser(username: string, session: WebSessionDoc) {
+    // remove user from room.occupants
+    const user = await User.getUserByUsername(username);
+    const host = WebSession.getUser(session);
+    return await Room.removeUser(user._id, host);
+  }
 
   //FocusScore routes
   @Router.post("/FocusScores/:user")
   async createFocusScore(session: WebSessionDoc) {
     // for a user in current session without a score, instantiate FocusScore associated with user to 0
     const user = WebSession.getUser(session);
-    return await FocusScore.create(user, 0);
+    return await FocusScore.create(user);
   }
 
-  @Router.put("/FocusScore/:user")
-  async updateScore(user: ObjectId, points: number, update: Partial<PostDoc>) {
-    return await FocusScore.updateScore(user, update);
+  @Router.get("/FocusScore")
+  async getFocusScore(username: string) {
+    const user = await User.getUserByUsername(username);
+    return await FocusScore.getFocusScore(user._id);
+    // increase the FocusScore associated with User by the specified amount of points
+  }
+
+  @Router.put("/FocusScore/set/:user")
+  async setScore(session: WebSessionDoc, points: number) {
+    if (points == null) {
+      throw new NotAllowedError("Invalid score!");
+    }
+    const user = WebSession.getUser(session);
+    //const currentPoints = await FocusScore.getFocusScore(user);
+    return await FocusScore.updateScore(user, { score: Number(points) });
+    // increase the FocusScore associated with User by the specified amount of points
+  }
+
+  @Router.put("/FocusScore/update/:user")
+  async updateScore(session: WebSessionDoc, points: number) {
+    if (points == null) {
+      throw new NotAllowedError("Invalid score!");
+    }
+    const user = WebSession.getUser(session);
+    const currentPoints = await FocusScore.getFocusScore(user);
+    return await FocusScore.updateScore(user, { score: Number(currentPoints.score) + Number(points) });
     // increase the FocusScore associated with User by the specified amount of points
   }
 
@@ -227,21 +260,26 @@ class Routes {
   @Router.post("/status/:user")
   async createStatus(session: WebSessionDoc) {
     const user = WebSession.getUser(session);
-    await Status.create(user, "Online");
-    return { msg: "Status created!", statusType: await Status.getStatus(user) };
+    const ret = await Status.create(user);
+    return ret;
   }
 
-  @Router.get("/status/:username")
-  async getStatus(name: string) {
-    const user = User.getUserByUsername(name);
-    const stat = await Status.getStatus((await user)._id);
+  @Router.get("/status")
+  async getStatus(username: string) {
+    const user = await User.getUserByUsername(username);
+    const stat = await Status.getStatus(user._id);
     return { msg: "Status found!", status: stat };
   }
 
-  @Router.put("/status/:user1")
-  async updateStatus(session: WebSessionDoc, update: Partial<StatusDoc>) {
+  @Router.put("/status/:user")
+  async updateStatus(session: WebSessionDoc, newStatus: string) {
     const user = WebSession.getUser(session);
-    return await Status.updateStatus(user, update);
+    if (newStatus !== "Online" && newStatus !== "Offline" && newStatus !== "Away" && newStatus !== "Focus") {
+      throw new NotAllowedError("Invalid status type!");
+    } else {
+      await Status.updateStatus(user, { statusType: newStatus });
+    }
+    return { msg: "Status updated!", status: await Status.getStatus(user) };
   }
 
   // // !!!!!!!!synchronizations!!!!!!!

@@ -10,25 +10,26 @@ export interface FocusScoreDoc extends BaseDoc {
 export default class FocusScoreConcept {
   public readonly FocusScores = new DocCollection<FocusScoreDoc>("FocusScores");
 
-  async create(_id: ObjectId, score: number = 0) {
-    if (this.FocusScores.readOne(_id) === null) {
-      await this.FocusScores.createOne({ score, _id });
+  async create(user: ObjectId) {
+    const _id = await this.FocusScores.createOne({ score: 0, user: user });
+    return { msg: "FocusScore created!!", score: await this.FocusScores.readOne({ _id }) };
+  }
+
+  async getFocusScore(user: ObjectId) {
+    const score = await this.FocusScores.readOne({ user });
+    if (score === null) {
+      throw new NotFoundError("User not found!");
+    } else {
+      return { msg: "Score:", score: score.score };
     }
   }
 
-  async getFocusScore(_id: ObjectId) {
-    if (this.FocusScores.readOne({ _id }) === null) {
+  async updateScore(user: ObjectId, update: Partial<FocusScoreDoc>) {
+    if (this.FocusScores.readOne({ user }) === null) {
       throw new NotFoundError("User not found!");
     } else {
-      return await this.FocusScores.readOne({ _id });
-    }
-  }
-
-  async updateScore(_id: ObjectId, update: Partial<FocusScoreDoc>) {
-    if (this.FocusScores.readOne({ _id }) === null) {
-      throw new NotFoundError("User not found!");
-    } else {
-      return await this.FocusScores.updateOne({ _id }, update);
+      await this.FocusScores.updateOne({ user }, update);
+      return { msg: "Score updated!", score: await this.FocusScores.readOne({ user }) };
     }
   }
 }

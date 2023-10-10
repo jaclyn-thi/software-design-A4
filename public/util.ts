@@ -79,16 +79,70 @@ const operations: operation[] = [
   },
 
   {
-    name: "Create Status",
+    name: "Create Status (current session user)",
     endpoint: "/api/status/:user",
     method: "POST",
-    fields: { id: "input" },
+    fields: {},
   },
   {
     name: "Get Status",
-    endpoint: "/api/status/:username",
+    endpoint: "/api/status",
     method: "GET",
-    fields: { user: "input" },
+    fields: { username: "input" },
+  },
+  {
+    name: "Update Status (current session user)",
+    endpoint: "/api/status/:user",
+    method: "PUT",
+    fields: { newStatus: "input" },
+  },
+  {
+    name: "Create FocusScore (current session user)",
+    endpoint: "/api/FocusScores/:user",
+    method: "POST",
+    fields: {},
+  },
+  {
+    name: "Get FocusScore",
+    endpoint: "/api/FocusScore",
+    method: "GET",
+    fields: { username: "input" },
+  },
+  {
+    name: "Set FocusScore (current session user)",
+    endpoint: "/api/FocusScore/set/:user",
+    method: "PUT",
+    fields: { points: "input" },
+  },
+  {
+    name: "Update FocusScore (current session user)",
+    endpoint: "/api/FocusScore/update/:user",
+    method: "PUT",
+    fields: { points: "input" },
+  },
+  {
+    name: "Create room (current session user)",
+    endpoint: "/api/rooms/:user",
+    method: "POST",
+    fields: {},
+  },
+  {
+    name: "Get room",
+    endpoint: "/api/rooms",
+    method: "GET",
+    fields: { hostName: "input" },
+  },
+  {
+    name: "Get occupants of a room",
+    endpoint: "/api/room/occupants",
+    method: "GET",
+    fields: { hostName: "input" },
+  },
+  {
+    name: "Add user to personal room",
+    endpoint: "/api/room/occupants/:username",
+    method: "PUT",
+    fields: { username: "input" },
   },
 ];
 
