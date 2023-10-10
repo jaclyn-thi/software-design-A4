@@ -4,7 +4,7 @@ import { NotAllowedError, NotFoundError } from "./errors";
 
 export interface RoomDoc extends BaseDoc {
   host: ObjectId;
-  occupants: ObjectId[];
+  occupants: Array<ObjectId>;
 }
 
 export default class RoomConcept {
@@ -29,17 +29,15 @@ export default class RoomConcept {
     if (room === null) {
       throw new NotFoundError("Room not found!");
     } else {
-      const existing = room.occupants.find((userId) => userId === user);
-      if (existing !== undefined) {
-        throw new NotAllowedError("User already in room!");
+      console.log(room.occupants);
+      const occupantList = room.occupants;
+      for (const elt of occupantList) {
+        if (String(elt) === String(user)) {
+          throw new NotAllowedError("User already in room!");
+        }
       }
-      //   const occupantList = room.occupants;
-      //   for (const elt of occupantList) {
-      //     if (elt === user) {
-      //       throw new NotAllowedError("User already in room!");
-      //     }
-      //   }
       room.occupants.push(user);
+      await this.rooms.updateOne({ host }, room);
       return { msg: "User added!", room: room };
     }
   }
@@ -49,13 +47,20 @@ export default class RoomConcept {
     if (room === null) {
       throw new NotFoundError("Room not found!");
     } else {
-      const index = room.occupants.indexOf(user);
-      if (index === -1) {
-        throw new NotFoundError("Could not find user in room!");
-      } else {
-        room.occupants.splice(index, 1);
+      console.log("user:", user);
+      const occupantList = room.occupants;
+
+      let count = 0;
+      for (const elt of occupantList) {
+        if (String(elt) === String(user)) {
+          room.occupants.splice(count, 1);
+          await this.rooms.updateOne({ host }, room);
+          return { msg: "User removed!", room: room };
+        } else {
+          count += 1;
+        }
       }
-      return { msg: "User removed!", room: room };
+      throw new NotFoundError("User not found!");
     }
   }
 

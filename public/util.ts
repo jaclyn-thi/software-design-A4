@@ -144,6 +144,12 @@ const operations: operation[] = [
     method: "PUT",
     fields: { username: "input" },
   },
+  {
+    name: "Remove user from personal room",
+    endpoint: "/api/room/occupants/remove/:username",
+    method: "PUT",
+    fields: { username: "input" },
+  },
 ];
 
 // Do not edit below here.

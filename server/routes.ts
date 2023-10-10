@@ -166,7 +166,7 @@ class Routes {
     return await Room.addUser(user._id, host);
   }
 
-  @Router.put("/room/occupants/:_id")
+  @Router.put("/room/occupants/remove/:username")
   async removeUser(username: string, session: WebSessionDoc) {
     // remove user from room.occupants
     const user = await User.getUserByUsername(username);
@@ -243,18 +243,8 @@ class Routes {
   // }
 
   // @Router.put("/task/:user/:_id")
-  // async updateTaskTitle(session: WebSessionDoc, task: ObjectId, title: string) {
-  //   // edit the title of the task object
-  // }
-
-  // @Router.put("/task/:user/:_id")
-  // async updateTaskStatus(session: WebSessionDoc, task: ObjectId, completionStatus: bool) {
-  //   // edit the status of the task to be completedStatus
-  // }
-
-  // @Router.put("/task/:user/:_id")
-  // async updateDueDate(session: WebSessionDoc, task: ObjectId, due: Date) {
-  //   // edit the due date of the task to be 'due'
+  // async updateTask(task: ObjectId, update: Partial<UserDoc>) {
+  //   // edit the task object
   // }
 
   @Router.post("/status/:user")
