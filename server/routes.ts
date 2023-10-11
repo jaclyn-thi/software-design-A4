@@ -2,9 +2,11 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { FocusScore, Friend, Post, Room, Status, User, WebSession } from "./app";
+import { FocusScore, Friend, Post, Room, Status, Task, TimedResource, User, WebSession } from "./app";
+import { TimedResourceDoc } from "./concepts/TimedResource";
 import { NotAllowedError } from "./concepts/errors";
 import { PostDoc, PostOptions } from "./concepts/post";
+import { TaskDoc } from "./concepts/task";
 import { UserDoc } from "./concepts/user";
 import { WebSessionDoc } from "./concepts/websession";
 import Responses from "./responses";
@@ -211,41 +213,48 @@ class Routes {
     // increase the FocusScore associated with User by the specified amount of points
   }
 
-  // //routes for everything else lol
-  // @Router.post("/Timers/:resource")
-  // async createTimedResource(resource: ObjectId, duration: number) {
-  //   // create a TimedResource from the resource object
-  // }
+  //routes for everything else lol
+  @Router.post("/Timers/:_id")
+  async createTimedResource(_id: ObjectId, duration: number) {
+    return await TimedResource.create(_id, duration);
+  }
 
-  // @Router.put("Timers/:resource")
-  // async updateDuration(timer: ObjectId, duration: number) {
-  //   // change the duration of the given timed resource to duration
-  // }
+  @Router.put("/Timers/startTimer/:_id")
+  async startTimer(_id: ObjectId) {
+    return await TimedResource.startTimer(_id);
+  }
 
-  // @Router.put("Timers/:resource")
-  // async complete(timer: ObjectId) {
-  //   // move the timer to the set of completed timers
-  // }
+  @Router.get("/Timers")
+  async getTimer(_id: ObjectId) {
+    return await TimedResource.getTimer(_id);
+  }
 
-  // @Router.put("Timers/:resource")
-  // async resetTimer(timer: ObjectId) {
-  //   // remove the timer from the set of completed timers
-  // }
+  @Router.patch("/Timers/updateTimer/:_id")
+  async updateTimer(_id: ObjectId, update: Partial<TimedResourceDoc>) {
+    return await TimedResource.updateTimer(_id, update);
+  }
 
-  // @Router.get("/tasks/:user")
-  // async getTasks(session: WebSessionDoc) {
-  //   // get tasks authored by the current user in session
-  // }
+  @Router.put("/Timers/reset/:_id")
+  async resetTimer(_id: ObjectId) {
+    return await TimedResource.resetTimer(_id);
+  }
 
-  // @Router.post("/tasks/:user")
-  // async createTask(session: WebSessionDoc, title: string, due: Date) {
-  //   // create a task authored by the current user in session with the given date and due date
-  // }
+  @Router.get("/tasks")
+  async getTasks(session: WebSessionDoc) {
+    const user = WebSession.getUser(session);
+    return await Task.getTasks({ author: user });
+  }
 
-  // @Router.put("/task/:user/:_id")
-  // async updateTask(task: ObjectId, update: Partial<UserDoc>) {
-  //   // edit the task object
-  // }
+  @Router.post("/tasks/create/:user")
+  async createTask(session: WebSessionDoc, title: string, due: Date) {
+    const user = WebSession.getUser(session);
+    return await Task.create(user, title, due);
+  }
+
+  @Router.patch("/task/update/:_id")
+  async updateTask(_id: ObjectId, update: Partial<TaskDoc>) {
+    return await Task.updateTask(_id, update);
+  }
 
   @Router.post("/status/:user")
   async createStatus(session: WebSessionDoc) {

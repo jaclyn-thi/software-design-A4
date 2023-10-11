@@ -150,6 +150,54 @@ const operations: operation[] = [
     method: "PUT",
     fields: { username: "input" },
   },
+  {
+    name: "Get Tasks (current user)",
+    endpoint: "/api/tasks",
+    method: "GET",
+    fields: {},
+  },
+  {
+    name: "Create Task (current user)",
+    endpoint: "/api/tasks/create/:user",
+    method: "POST",
+    fields: { title: "input", due: "input" },
+  },
+  {
+    name: "Update Task",
+    endpoint: "/api/task/update/:_id",
+    method: "PATCH",
+    fields: { _id: "input", update: { title: "input", due: "input", completionStatus: "input" } },
+  },
+  {
+    name: "Create TimedResource",
+    endpoint: "/api/Timers/:_id",
+    method: "POST",
+    fields: { _id: "input", duration: "input" },
+  },
+  {
+    name: "Get TimedResource (enter resource ID)",
+    endpoint: "/api/Timers",
+    method: "GET",
+    fields: { _id: "input" },
+  },
+  {
+    name: "Start Timed Resource",
+    endpoint: "/api/Timers/startTimer/:_id",
+    method: "PUT",
+    fields: { _id: "input" },
+  },
+  {
+    name: "Reset Timed Resource",
+    endpoint: "/api/Timers/reset/:_id",
+    method: "PUT",
+    fields: { _id: "input" },
+  },
+  {
+    name: "Update Timed Resource",
+    endpoint: "/api/Timers/updateTimer/:_id",
+    method: "PATCH",
+    fields: { _id: "input", update: { duration: "input" } },
+  },
 ];
 
 // Do not edit below here.
