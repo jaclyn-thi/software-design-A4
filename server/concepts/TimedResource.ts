@@ -13,7 +13,7 @@ export default class TimedResourceConcept {
   public readonly timers = new DocCollection<TimedResourceDoc>("timers");
   async create(resourceID: ObjectId, duration: number) {
     const _id = await this.timers.createOne({ resourceID: resourceID, duration: duration, completedStatus: false });
-    return { msg: "Timer created!", timer: await this.timers.readOne({ user: _id }) };
+    return { msg: "Timer created!", timer: await this.timers.readOne({ _id }) };
   }
 
   async startTimer(_id: ObjectId) {
@@ -23,8 +23,20 @@ export default class TimedResourceConcept {
     } else if (timer.completedStatus !== false) {
       throw new NotAllowedError("Reset timer first!");
     } else {
-      return timer.duration; // returns duration to pass to the front end to start decrementing
-      // when counter on front end reaches zero front end will call another post request to update the completedStatus
+      //const counter = timer.duration * 60; // continuously count down until timer is done
+
+      setTimeout(async () => {
+        //console.log(counter);
+        //counter--;
+
+        // if (counter < 0) {
+        //   //timer complete
+        //   clearInterval(interval);
+        //   await this.timers.updateOne({ resourceID: _id }, { completedStatus: true });
+        //   return { msg: "Timer completed!", timer: await this.timers.readOne({ resourceID: _id }) };
+        // }
+        return { msg: "Timer completed!", timer: await this.timers.readOne({ resourceID: _id }) };
+      }, 1000);
     }
   }
 

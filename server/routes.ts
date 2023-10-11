@@ -4,7 +4,7 @@ import { Router, getExpressRouter } from "./framework/router";
 
 import { FocusScore, Friend, Post, Room, Status, Task, TimedResource, User, WebSession } from "./app";
 import { TimedResourceDoc } from "./concepts/TimedResource";
-import { NotAllowedError, NotFoundError } from "./concepts/errors";
+import { NotAllowedError } from "./concepts/errors";
 import { PostDoc, PostOptions } from "./concepts/post";
 import { TaskDoc } from "./concepts/task";
 import { UserDoc } from "./concepts/user";
@@ -203,12 +203,13 @@ class Routes {
   }
 
   @Router.put("/FocusScore/update/:user")
-  async updateScore(_id: ObjectId, points: number) {
+  async updateScore(session: WebSessionDoc, points: number) {
     if (points == null) {
       throw new NotAllowedError("Invalid score!");
     }
-    const currentPoints = await FocusScore.getFocusScore(_id);
-    return await FocusScore.updateScore(_id, { score: Number(currentPoints.score) + Number(points) });
+    const user = WebSession.getUser(session);
+    const currentPoints = await FocusScore.getFocusScore(user);
+    return await FocusScore.updateScore(user, { score: Number(currentPoints.score) + Number(points) });
     // increase the FocusScore associated with User by the specified amount of points
   }
 
@@ -220,7 +221,6 @@ class Routes {
 
   @Router.put("/Timers/startTimer/:_id")
   async startTimer(_id: ObjectId) {
-    // returns the duration of the timer tied to the object with _id to be displayed and decremented on the front end
     return await TimedResource.startTimer(_id);
   }
 
@@ -282,102 +282,31 @@ class Routes {
   }
 
   // // !!!!!!!!synchronizations!!!!!!!
-  @Router.post("/focusrooms/:duration")
-  async createFocusRoom(session: WebSessionDoc, duration: number) {
-    const user = WebSession.getUser(session);
-    //await this.createRoom(session);
-    await Room.create(user);
-    const room = await Room.rooms.readOne({ user });
+  // @Router.post("/focusrooms/")
+  // async createFocusRoom(session: WebSessionDoc, duration: number) {
+  //   // for a user in current session without a FocusRoom, create a FocusRoom where the host is user and focus duration is duration
+  // }
 
-    if (room === null) {
-      throw new NotFoundError("Room not found!");
-    }
-    //await this.createTimedResource(room._id, duration); //create timed resource tied to room to create a focusroom
-    await TimedResource.create(room._id, duration);
-  }
+  // @Router.put("/focusroom/:_id")
+  // async addToFocusRoom(user: ObjectId) {
+  //   // for a user with given Id, add user to FocusRoom if they are friends with the host of the focusroom
+  // }
 
-  @Router.put("/focusroom/:_id")
-  async addToFocusRoom(username: string, session: WebSessionDoc) {
-    // for a user with username, add user to FocusRoom if they are friends with the host of the focusroom
-    const user = await User.getUserByUsername(username);
-    const host = WebSession.getUser(session);
-    const friendArray = await Friend.getFriends(host);
+  // @Router.put("/focusroom/:_id")
+  // async removeFromFocusRoom(user: ObjectId) {
+  //   // for a user with given Id, remove user from FocusRoom if they are an occupant of that room
+  // }
 
-    for (const friend of friendArray) {
-      if (String(user._id) === String(friend)) {
-        return await this.addUser(username, session);
-      }
-    }
-    throw new NotFoundError("Can only add friends of host!");
-  }
+  // @Router.put("/focusroom/:_id")
+  // async rewardFocusRoom(_id: ObjectId) {
+  //   // when focus timer in focus room is moved to completed timers, add points to the FocusScores of all occupants based on the duration of the
+  //   // focus timer
+  // }
 
-  @Router.put("/focusroom/:_id")
-  async removeFromFocusRoom(username: string, session: WebSessionDoc) {
-    // for a user with given username, remove user from FocusRoom if they are an occupant of that room
-    //return await this.removeUser(username, session);
-    const user = await User.getUserByUsername(username);
-    const host = WebSession.getUser(session);
-    return await Room.removeUser(user._id, host);
-  }
-
-  @Router.put("/focusroom/:_id")
-  async rewardFocusRoom(session: WebSessionDoc, _id: ObjectId) {
-    // if focus timer in focus room is completed and function called, add points to the FocusScores of all occupants based on the duration of the focus timer, then reset timer
-    // _id here should be _id of the room
-    // should be called by front end when focusroom timer has completed
-    const room = await Room.rooms.readOne({ _id });
-    if (room === null) {
-      throw new NotFoundError("Room not found!");
-    }
-    const timer = await TimedResource.timers.readOne({ _id });
-    if (timer === null) {
-      throw new NotFoundError("Timer not found!");
-    }
-    if (timer.completedStatus !== true) {
-      throw new NotAllowedError("Can't reward yet!");
-    }
-
-    const occupants = room.occupants;
-    for (const occupant of occupants) {
-      //update score for everyone in room acccording to status of timer
-      await FocusScore.updateScore(occupant, { score: (timer.duration * (1 + occupants.length)) / 10 });
-    }
-    await TimedResource.updateTimer(_id, { completedStatus: false });
-    return { msg: "All users rewarded!" };
-  }
-
-  // MAYBE ADD REWARD BUTTON AND FUNCTION????
-
-  @Router.get("/leaderboard")
-  async getLeaderboard(session: WebSessionDoc) {
-    const user = WebSession.getUser(session);
-    const userFocusScore = await FocusScore.getFocusScore(user);
-
-    const friends = await Friend.getFriends(user);
-
-    const scoresArray = [];
-    scoresArray.push({ user: user, score: userFocusScore.score }); //add current session user's score to leaderboard
-
-    for (const friend of friends) {
-      //add current session user's friend's scores to leaderboard
-      const score = await FocusScore.getFocusScore(friend);
-      scoresArray.push({ user: friend, score: score.score });
-    }
-
-    const leaderboard = scoresArray.sort((n1, n2) => {
-      // returns a list of {user: ObjectId, score: number} enums sorted by score
-      //https://copyprogramming.com/howto/typescript-sorting-based-on-enum-constants
-      if (n1.score > n2.score) {
-        return -1;
-      }
-      if (n1.score < n2.score) {
-        return 1;
-      }
-      return 0;
-    });
-
-    return leaderboard;
-  }
+  // @Router.get("/leaderboard")
+  // async getLeaderboard(session: WebSessionDoc, _id) {
+  //   // returns an array containing the session user and all their friends, ordered by descending FocusScore
+  // }
 }
 
 export default getExpressRouter(new Routes());

@@ -12,7 +12,7 @@ export default class FocusScoreConcept {
 
   async create(user: ObjectId) {
     const _id = await this.FocusScores.createOne({ score: 0, user: user });
-    return { msg: "FocusScore created!!", score: await this.FocusScores.readOne({ user: _id }) };
+    return { msg: "FocusScore created!!", score: await this.FocusScores.readOne({ _id }) };
   }
 
   async getFocusScore(user: ObjectId) {
@@ -29,8 +29,8 @@ export default class FocusScoreConcept {
     if ((await this.FocusScores.readOne({ user: user })) === null) {
       throw new NotFoundError("User not found!");
     } else {
-      await this.FocusScores.updateOne({ user: user }, update);
-      return { msg: "Score updated!", score: await this.FocusScores.readOne({ user: user }) };
+      await this.FocusScores.updateOne({ user }, update);
+      return { msg: "Score updated!", score: await this.FocusScores.readOne({ user }) };
     }
   }
 }

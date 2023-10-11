@@ -54,48 +54,6 @@ const operations: operation[] = [
     fields: { username: "input" },
   },
   {
-    name: "Get Friends (current session user)",
-    endpoint: "/api/friends",
-    method: "GET",
-    fields: {},
-  },
-  {
-    name: "Remove Friend",
-    endpoint: "/api/friend/:friend",
-    method: "DELETE",
-    fields: { friend: "input" },
-  },
-  {
-    name: "Get Requests",
-    endpoint: "/api/friend/requests",
-    method: "GET",
-    fields: {},
-  },
-  {
-    name: "Send Friend Request",
-    endpoint: "/api/friend/requests/:to",
-    method: "POST",
-    fields: { to: "input" },
-  },
-  {
-    name: "Remove Friend Request",
-    endpoint: "/api/friend/requests/:to",
-    method: "DELETE",
-    fields: { to: "input" },
-  },
-  {
-    name: "Accept Friend Request",
-    endpoint: "/api/friend/accept/:from",
-    method: "PUT",
-    fields: { from: "input" },
-  },
-  {
-    name: "Reject Friend Request",
-    endpoint: "/api/friend/reject/:from",
-    method: "PUT",
-    fields: { from: "input" },
-  },
-  {
     name: "Get Posts (empty for all)",
     endpoint: "/api/posts",
     method: "GET",
@@ -157,10 +115,10 @@ const operations: operation[] = [
     fields: { points: "input" },
   },
   {
-    name: "Update FocusScore",
-    endpoint: "/api/FocusScore/update/:_id",
+    name: "Update FocusScore (current session user)",
+    endpoint: "/api/FocusScore/update/:user",
     method: "PUT",
-    fields: { _id: "input", points: "input" },
+    fields: { points: "input" },
   },
   {
     name: "Create room (current session user)",
@@ -238,13 +196,7 @@ const operations: operation[] = [
     name: "Update Timed Resource",
     endpoint: "/api/Timers/updateTimer/:_id",
     method: "PATCH",
-    fields: { _id: "input", update: { duration: "input", completedStatus: "input" } },
-  },
-  {
-    name: "Get Leaderboard",
-    endpoint: "/api/leaderboard",
-    method: "GET",
-    fields: {},
+    fields: { _id: "input", update: { duration: "input" } },
   },
 ];
 
