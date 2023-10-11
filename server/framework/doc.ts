@@ -53,8 +53,8 @@ export default class DocCollection<Schema extends BaseDoc> {
    * In case the _id is a string, it will be converted to an ObjectId.
    */
   private sanitizeFilter(filter: Filter<Schema>) {
-    if (filter._id && typeof filter._id === "string" && ObjectId.isValid(filter._id)) {
-      filter._id = new ObjectId(filter._id) as Condition<WithId<Schema>["_id"]>;
+    if (filter._ && typeof filter.user === "string" && ObjectId.isValid(filter.user)) {
+      filter.user = new ObjectId(filter.user) as Condition<WithId<Schema>["user"]>;
     }
   }
 
@@ -149,7 +149,7 @@ export default class DocCollection<Schema extends BaseDoc> {
     if (one === null) {
       return null;
     }
-    await this.deleteOne({ _id: one._id } as Filter<Schema>);
+    await this.deleteOne({ user: one._id } as Filter<Schema>);
     return one;
   }
 }

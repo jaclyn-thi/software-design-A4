@@ -12,7 +12,7 @@ export default class RoomConcept {
 
   async create(user: ObjectId) {
     const _id = await this.rooms.createOne({ host: user, occupants: new Array<ObjectId>() });
-    return { msg: "Room created!!", room: await this.rooms.readOne({ _id }) };
+    return { msg: "Room created!!", room: await this.rooms.readOne({ user: _id }) };
   }
 
   async getRoom(host: ObjectId) {

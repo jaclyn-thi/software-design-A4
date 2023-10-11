@@ -11,7 +11,7 @@ export default class StatusConcept {
   public readonly statuses = new DocCollection<StatusDoc>("statuses");
   async create(user: ObjectId) {
     const _id = await this.statuses.createOne({ statusType: "Online", user: user });
-    return { msg: "Status created!!", statusType: await this.statuses.readOne({ _id }) };
+    return { msg: "Status created!!", statusType: await this.statuses.readOne({ user: _id }) };
   }
 
   async getStatus(user: ObjectId) {

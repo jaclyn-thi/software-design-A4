@@ -18,7 +18,7 @@ export default class PostConcept {
 
   async create(author: ObjectId, content: string, options?: PostOptions) {
     const _id = await this.posts.createOne({ author, content, options });
-    return { msg: "Post successfully created!", post: await this.posts.readOne({ _id }) };
+    return { msg: "Post successfully created!", post: await this.posts.readOne({ user: _id }) };
   }
 
   async getPosts(query: Filter<PostDoc>) {
@@ -34,17 +34,17 @@ export default class PostConcept {
 
   async update(_id: ObjectId, update: Partial<PostDoc>) {
     this.sanitizeUpdate(update);
-    await this.posts.updateOne({ _id }, update);
+    await this.posts.updateOne({ user: _id }, update);
     return { msg: "Post successfully updated!" };
   }
 
   async delete(_id: ObjectId) {
-    await this.posts.deleteOne({ _id });
+    await this.posts.deleteOne({ user: _id });
     return { msg: "Post deleted successfully!" };
   }
 
   async isAuthor(user: ObjectId, _id: ObjectId) {
-    const post = await this.posts.readOne({ _id });
+    const post = await this.posts.readOne({ user: _id });
     if (!post) {
       throw new NotFoundError(`Post ${_id} does not exist!`);
     }
