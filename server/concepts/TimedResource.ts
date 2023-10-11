@@ -13,7 +13,7 @@ export default class TimedResourceConcept {
   public readonly timers = new DocCollection<TimedResourceDoc>("timers");
   async create(resourceID: ObjectId, duration: number) {
     const _id = await this.timers.createOne({ resourceID: resourceID, duration: duration, completedStatus: false });
-    return { msg: "Timer created!", timer: await this.timers.readOne({ _id }) };
+    return { msg: "Timer created!", timer: await this.timers.readOne({ user: _id }) };
   }
 
   async startTimer(_id: ObjectId) {
