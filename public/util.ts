@@ -158,9 +158,9 @@ const operations: operation[] = [
   },
   {
     name: "Update FocusScore",
-    endpoint: "/api/FocusScore/update/:_id",
+    endpoint: "/api/FocusScore/update/:username",
     method: "PUT",
-    fields: { _id: "input", points: "input" },
+    fields: { username: "input", points: "input" },
   },
   {
     name: "Create room (current session user)",
