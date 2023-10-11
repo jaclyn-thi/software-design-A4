@@ -25,8 +25,7 @@ export default class FocusScoreConcept {
   }
 
   async updateScore(user: ObjectId, update: Partial<FocusScoreDoc>) {
-    console.log(await this.FocusScores.readOne({ user: user }));
-    if ((await this.FocusScores.readOne({ user: user })) === null) {
+    if ((await this.FocusScores.readOne({ user })) === null) {
       throw new NotFoundError("User not found!");
     } else {
       await this.FocusScores.updateOne({ user }, update);
