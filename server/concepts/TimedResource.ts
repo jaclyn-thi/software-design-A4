@@ -23,20 +23,8 @@ export default class TimedResourceConcept {
     } else if (timer.completedStatus !== false) {
       throw new NotAllowedError("Reset timer first!");
     } else {
-      //const counter = timer.duration * 60; // continuously count down until timer is done
-
-      setTimeout(async () => {
-        //console.log(counter);
-        //counter--;
-
-        // if (counter < 0) {
-        //   //timer complete
-        //   clearInterval(interval);
-        //   await this.timers.updateOne({ resourceID: _id }, { completedStatus: true });
-        //   return { msg: "Timer completed!", timer: await this.timers.readOne({ resourceID: _id }) };
-        // }
-        return { msg: "Timer completed!", timer: await this.timers.readOne({ resourceID: _id }) };
-      }, 1000);
+      return timer.duration; // returns duration to pass to the front end to start decrementing
+      // when counter on front end reaches zero front end will call another post request to update the completedStatus
     }
   }
 
