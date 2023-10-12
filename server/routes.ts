@@ -283,21 +283,10 @@ class Routes {
   }
 
   // // !!!!!!!!synchronizations!!!!!!!
-  @Router.post("/focusrooms/:duration")
-  async createFocusRoom(session: WebSessionDoc, duration: number) {
-    const user = WebSession.getUser(session);
-    //await this.createRoom(session);
-    await Room.create(user);
-    const room = await Room.rooms.readOne({ user });
+  // a FocusRoom will be created on the front end when a user registers. First it will create a room for the user and then create
+  // timedresource tied to that room.
 
-    if (room === null) {
-      throw new NotFoundError("Room not found!");
-    }
-    //await this.createTimedResource(room._id, duration); //create timed resource tied to room to create a focusroom
-    await TimedResource.create(room._id, duration);
-  }
-
-  @Router.put("/focusroom/:_id")
+  @Router.put("/focusroom/:username")
   async addToFocusRoom(username: string, session: WebSessionDoc) {
     // for a user with username, add user to FocusRoom if they are friends with the host of the focusroom
     const user = await User.getUserByUsername(username);
@@ -306,13 +295,13 @@ class Routes {
 
     for (const friend of friendArray) {
       if (String(user._id) === String(friend)) {
-        return await this.addUser(username, session);
+        return await Room.addUser(user._id, host);
       }
     }
     throw new NotFoundError("Can only add friends of host!");
   }
 
-  @Router.put("/focusroom/:_id")
+  @Router.delete("/focusroom/:username")
   async removeFromFocusRoom(username: string, session: WebSessionDoc) {
     // for a user with given username, remove user from FocusRoom if they are an occupant of that room
     //return await this.removeUser(username, session);
@@ -321,8 +310,8 @@ class Routes {
     return await Room.removeUser(user._id, host);
   }
 
-  @Router.put("/focusroom/:_id")
-  async rewardFocusRoom(session: WebSessionDoc, _id: ObjectId) {
+  @Router.put("/focusroom/reward/:_id")
+  async rewardFocusRoom(_id: ObjectId) {
     // if focus timer in focus room is completed and function called, add points to the FocusScores of all occupants based on the duration of the focus timer, then reset timer
     // _id here should be _id of the room
     // should be called by front end when focusroom timer has completed
@@ -330,24 +319,29 @@ class Routes {
     if (room === null) {
       throw new NotFoundError("Room not found!");
     }
-    const timer = await TimedResource.timers.readOne({ _id });
+
+    const timer = await TimedResource.timers.readOne({ resourceID: _id });
+    console.log(timer);
     if (timer === null) {
       throw new NotFoundError("Timer not found!");
     }
-    if (timer.completedStatus !== true) {
+    if (Boolean(timer.completedStatus) !== true) {
       throw new NotAllowedError("Can't reward yet!");
     }
 
     const occupants = room.occupants;
-    for (const occupant of occupants) {
+    console.log("room", room);
+    const everyone = occupants.concat([room.host]);
+    console.log("everyone", everyone);
+    for (const person of everyone) {
       //update score for everyone in room acccording to status of timer
-      await FocusScore.updateScore(occupant, { score: (timer.duration * (1 + occupants.length)) / 10 });
+      console.log(timer.duration * (1 + everyone.length / 10));
+      const occupantScore = await FocusScore.getFocusScore(person);
+      await FocusScore.updateScore(person, { score: occupantScore.score + timer.duration * (1 + everyone.length / 10) });
     }
     await TimedResource.updateTimer(_id, { completedStatus: false });
-    return { msg: "All users rewarded!" };
+    return { msg: "All users rewarded!", room: await Room.rooms.readOne({ _id }) };
   }
-
-  // MAYBE ADD REWARD BUTTON AND FUNCTION????
 
   @Router.get("/leaderboard")
   async getLeaderboard(session: WebSessionDoc) {

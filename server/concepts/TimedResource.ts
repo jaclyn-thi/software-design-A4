@@ -30,8 +30,9 @@ export default class TimedResourceConcept {
 
   async getTimer(_id: ObjectId) {
     const timer = await this.timers.readOne({ resourceID: _id });
+    console.log(timer);
     if (timer === null) {
-      throw new NotFoundError("Timer not found!");
+      throw new NotFoundError("Timer not found!!");
     } else {
       return { msg: "Timer found!", timer: timer };
     }

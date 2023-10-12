@@ -18,7 +18,8 @@ export default class FocusScoreConcept {
   async getFocusScore(user: ObjectId) {
     const score = await this.FocusScores.readOne({ user });
     if (score === null) {
-      throw new NotFoundError("User not found!");
+      console.log("problem user:", user);
+      throw new NotFoundError("User not found!!!!");
     } else {
       return { msg: "Score:", score: score.score };
     }
@@ -26,7 +27,7 @@ export default class FocusScoreConcept {
 
   async updateScore(user: ObjectId, update: Partial<FocusScoreDoc>) {
     if ((await this.FocusScores.readOne({ user })) === null) {
-      throw new NotFoundError("User not found!");
+      throw new NotFoundError("User not found!!!");
     } else {
       await this.FocusScores.updateOne({ user }, update);
       return { msg: "Score updated!", score: await this.FocusScores.readOne({ user }) };

@@ -246,6 +246,30 @@ const operations: operation[] = [
     method: "GET",
     fields: {},
   },
+  {
+    name: "Add to FocusRoom",
+    endpoint: "/api/focusroom/:username",
+    method: "PUT",
+    fields: { username: "input" },
+  },
+  {
+    name: "Remove from FocusRoom",
+    endpoint: "/api/focusroom/:username",
+    method: "DELETE",
+    fields: { username: "input" },
+  },
+  {
+    name: "Reward FocusRoom",
+    endpoint: "/api/focusroom/reward/:_id",
+    method: "PUT",
+    fields: { _id: "input" },
+  },
+  // {
+  //   name: "Create FocusRoom",
+  //   endpoint: "/api/focusrooms/:duration",
+  //   method: "POST",
+  //   fields: { duration: "input" },
+  // },
 ];
 
 // Do not edit below here.
